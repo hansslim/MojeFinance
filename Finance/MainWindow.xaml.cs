@@ -80,9 +80,24 @@ namespace Finance
                     return false;
                 }
             }
+            catch (XmlException)
+            {
+                MessageBoxResult result = MessageBox.Show("Konfigurační soubor je pravděpodobě poškozený. Pokud chcete vygenerovat nový konfigurační soubor a pokračovat ve spuštění programu, klikněte na OK. V opačném případě bude program ukončen.", "Chyba", MessageBoxButton.OKCancel, MessageBoxImage.Error);
+                if (result == MessageBoxResult.OK)
+                {
+                    File.WriteAllText("myConfig.xml", myConfigDefaults);
+                    NacistDefaultniNastaveni();
+                    return false;
+                }
+                else
+                {
+                    Close();
+                    return false;
+                }
+            }
             catch (Exception e)
             {
-                string innerEx = e.InnerException == null ? "-" : e.InnerException.ToString();
+                string innerEx = e.ToString();
                 MessageBox.Show($"Vyskytla se neočekávaná chyba, kvůli které se program ukončí." +
                     $"\n\rInner Exception: {innerEx} " +
                     $"\n\rException Message: {e.Message}", "Fatální chyba", MessageBoxButton.OK, MessageBoxImage.Error);
