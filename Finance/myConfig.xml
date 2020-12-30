@@ -1,6 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <myConfiguration>
-    <defaultDB>Hotovost</defaultDB>
-    <defaultZobrNazevDB>Hotovost</defaultZobrNazevDB>
-    <pathDB>Finance.accdb</pathDB>
+  <programInfo>
+    <lastRun>30.12.2020 15:37:35</lastRun>
+  </programInfo>
+  <defaultDB>Hotovost</defaultDB>
+  <defaultZobrNazevDB>Hotovost</defaultZobrNazevDB>
+  <pathDB>Finance.accdb</pathDB>
 </myConfiguration>

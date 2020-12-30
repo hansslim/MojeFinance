@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Xml;
+using System.Text;
 
 namespace Finance
 {
@@ -20,38 +22,73 @@ namespace Finance
         OleDbDataAdapter dataAdapter;
         OleDbDataReader reader;
         private string zvolenaDB, zvolenaDBZobr;
-        private string defaultDB, defaultZobrNazevDB, pathDB;
+        private string defaultDB, defaultZobrNazevDB, cestaDB;
+
+        private string cestaMyConfig;
+        private string myConfigDefaults = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><myConfiguration><programInfo><lastRun>" + DateTime.Now +"</lastRun></programInfo><defaultDB>Hotovost</defaultDB><defaultZobrNazevDB>Hotovost</defaultZobrNazevDB><pathDB>Finance.accdb</pathDB></myConfiguration>";
 
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        private void NacistDefaultniNastaveni()
+        //todo: upravit cestu myConfig na proměnnou
+        private bool NacistDefaultniNastaveni()
         {
-            //todo: když chybí, oznámit
             XmlDocument doc = new XmlDocument();
-            doc.Load("myConfig.xml");
-            
-            defaultDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultDB").InnerText;
-            defaultZobrNazevDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultZobrNazevDB").InnerText;
-            pathDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/pathDB").InnerText;
-            
-            doc.DocumentElement.SelectSingleNode("/myConfiguration/programInfo/lastRun").InnerText = DateTime.Now.ToString();
-            
-            doc.Save("myConfig.xml");
-            doc = null;
+            try
+            {
+                doc.Load("myConfig.xml");
+
+                defaultDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultDB").InnerText;
+                defaultZobrNazevDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultZobrNazevDB").InnerText;
+                cestaDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/pathDB").InnerText;
+
+                doc.Save("myConfig.xml");
+                return true;
+            }
+            catch (FileNotFoundException)
+            {
+                MessageBoxResult result = MessageBox.Show("Nepodařilo se nalézt konfigurační soubor. Pokud chcete vygenerovat nový konfigurační soubor a pokračovat ve spuštění programu, klikněte na OK. V opačném případě bude program ukončen.", "Chyba", MessageBoxButton.OKCancel, MessageBoxImage.Error);
+                if (result == MessageBoxResult.OK)
+                {
+                    if (!File.Exists("myConfig.xml")) File.WriteAllText("myConfig.xml", myConfigDefaults);
+                    NacistDefaultniNastaveni();
+                    return false;
+                }
+                else
+                {
+                    Close();
+                    return false;
+                }
+            }
+            catch (Exception e)
+            {
+                string innerEx = e.InnerException == null ? "-" : e.InnerException.ToString();
+                MessageBox.Show($"Vyskytla se neočekávaná chyba, kvůli které se program ukončí." +
+                    $"\n\rInner Exception: {innerEx} " +
+                    $"\n\rException Message: {e.Message}", "Fatální chyba", MessageBoxButton.OK, MessageBoxImage.Error);
+                Close();
+                return false;
+            }
+            finally
+            {
+                doc = null;
+            }
         }
 
         private void PoLoginu()
         {
-            zvolenaDB = defaultDB;
+            if (NacistDefaultniNastaveni())
+            {
+                zvolenaDB = defaultDB;
 
-            DPDatum.SelectedDate = DateTime.Now;
+                DPDatum.SelectedDate = DateTime.Now;
 
-            command = new OleDbCommand();
-            AktualizujStavCelkovehoStavuFinanci();
-            NaplnTabulkuDatyZeZvoleneDT(defaultDB, defaultZobrNazevDB);
+                command = new OleDbCommand();
+                AktualizujStavCelkovehoStavuFinanci();
+                NaplnTabulkuDatyZeZvoleneDT(defaultDB, defaultZobrNazevDB);
+            }
         }
 
         private void AktualizujStavCelkovehoStavuFinanci()
@@ -100,6 +137,7 @@ namespace Finance
                         }
                     case "MIProgram_Ukoncit":
                         {
+                            OdhlaseniUzivatele();
                             Close();
                             break;
                         }
@@ -330,10 +368,13 @@ namespace Finance
         {
             if (PrihlaseniKDB(PwBxHeslo.Password))
             {
-                PoLoginu();
+                if (NacistDefaultniNastaveni())
+                {
+                    PoLoginu();
 
-                GRLogin.Visibility = Visibility.Hidden;
-                GRProgram.Visibility = Visibility.Visible;
+                    GRLogin.Visibility = Visibility.Hidden;
+                    GRProgram.Visibility = Visibility.Visible;
+                }
             }
         }
 
@@ -344,7 +385,7 @@ namespace Finance
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            NacistDefaultniNastaveni();
+            //NacistDefaultniNastaveni();
         }
 
         private void PwBxHeslo_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -359,7 +400,8 @@ namespace Finance
         {
             try
             {
-                connection = new OleDbConnection($@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={pathDB}; Jet OLEDB:Database Password={pw};");
+                NacistDefaultniNastaveni();
+                connection = new OleDbConnection($@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={cestaDB}; Jet OLEDB:Database Password={pw};");
                 if (connection.State != ConnectionState.Open) connection.Open();
                 return true;
             }
