@@ -1,0 +1,100 @@
+﻿<Window x:Class="Finance.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Finance"
+        mc:Ignorable="d"
+        Title="Finance" Height="700" Width="1300" MinHeight="700" MinWidth="1300" WindowState="Maximized" Loaded="Window_Loaded">
+    <Grid Name="GRWindow">
+        <Grid Name="GRProgram" Visibility="Hidden">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20"></RowDefinition>
+                <RowDefinition Height="100"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="400"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid Name="GRVkladaniDat" Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0" Grid.ColumnSpan="3">
+                    <Border BorderBrush="#FFEAEAEA" BorderThickness="1"/>
+                    <DatePicker Name="DPDatum" HorizontalAlignment="Center" Margin="74,10,10,0" VerticalAlignment="Top" Height="30" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Width="316"/>
+                    <TextBox Name="TxBxCastka" HorizontalAlignment="Center" Height="30" Margin="74,45,10,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="316" FontSize="15" VerticalContentAlignment="Center"/>
+                    <TextBox Name="TxBxPoznamka" HorizontalAlignment="Center" Height="114" Margin="10,109,10,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="380" FontSize="15"/>
+                    <Label Content="Datum" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="59" FontSize="15"/>
+                    <Label Content="Částka" HorizontalAlignment="Left" Margin="10,45,0,0" VerticalAlignment="Top" Width="59" FontSize="15"/>
+                    <Label Content="Poznámka" HorizontalAlignment="Center" Margin="153,79,153,0" VerticalAlignment="Top" Width="94" FontSize="15"/>
+
+                </Grid>
+
+                <Button Name="BTPridatZaznam" Content="Přidat" HorizontalAlignment="Center" Margin="10,253,0,0" VerticalAlignment="Top" MinWidth="80" Click="BTPridatZaznam_Click" Width="124" Height="31"/>
+                <Button Name="BTUpravitZaznam" Visibility="Hidden" Content="Upravit" HorizontalAlignment="Center" Margin="10,294,0,0" VerticalAlignment="Top" MinWidth="80" Click="BTUpravitZaznam_Click" Width="124" Height="31"/>
+                <Button Name="BTVymazZaznam" Content="Vymazat" HorizontalAlignment="Center" Margin="10,253,0,0" VerticalAlignment="Top" Width="123" Click="BTVymazZaznam_Click" Grid.Column="1" Height="31" />
+                <Button Name="BTZrusit" Content="Zrušit" HorizontalAlignment="Center" Margin="10,253,10,0" VerticalAlignment="Top" Width="113" Click="BTZrusit_Click" Grid.Column="2" Height="31"  />
+            </Grid>
+            <Grid Name="GRStavFinanci" Grid.Row="1" Grid.Column="1">
+
+                <Label Content="Celkový finanční zůstatek:" HorizontalAlignment="Left" Margin="20,0,0,0" VerticalAlignment="Center" FontSize="30"/>
+                <Label Name="LBCelkovyZustatek" Content="-" HorizontalAlignment="Left" Margin="370,0,0,0" VerticalAlignment="Center" FontSize="30" Width="694" FontWeight="Bold"/>
+            </Grid>
+
+            <Grid Name="GRZakladniInformace" Grid.Row="1" Grid.Column="0" Background="White">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Border BorderBrush="#FFEAEAEA" BorderThickness="1" Grid.RowSpan="2"/>
+
+
+                <Grid Grid.Row="0">
+                    <Label Content="Zvolená databáze:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="130" FontSize="15"/>
+                    <Label Name="LBZvolenaDT" Content="-" HorizontalAlignment="Left" Margin="145,10,0,0" VerticalAlignment="Top" Width="245" FontSize="15" FontWeight="Bold"/>
+                </Grid>
+                <Grid Grid.Row="1">
+                    <Label Content="Aktuální zůstatek:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="135" FontSize="15"/>
+                    <Label Name="LBAktZustatekDT" Content="-" HorizontalAlignment="Left" Margin="145,10,0,0" VerticalAlignment="Top" Width="245" FontSize="15" FontWeight="Bold"/>
+                </Grid>
+            </Grid>
+
+            <Grid Name="GRVyberDatabaze" Grid.Row="0" Grid.ColumnSpan="2">
+                <Menu DockPanel.Dock="Top" BorderBrush="LightGray" BorderThickness="1">
+                    <MenuItem Header="Program">
+                        <MenuItem Header="Odhlásit" Name="MIProgram_Odhlasit" Click="MenuItem_Click"/>
+                        <MenuItem Header="Ukončit" Name="MIProgram_Ukoncit" Click="MenuItem_Click"/>
+                    </MenuItem>
+                    <MenuItem Header="Databáze" >
+                        <MenuItem Header="Hotovost" Name="MIDatabaze_Hotovost" Click="MenuItem_Click"/>
+                        <MenuItem Header="Běžný účet" Name="MIDatabaze_BankaBeznyUcet" Click="MenuItem_Click"/>
+                        <MenuItem Header="Spořící účet" Name="MIDatabaze_BankaSporiciUcet" Click="MenuItem_Click"/>
+                    </MenuItem>
+                </Menu>
+            </Grid>
+
+            <Grid Name="GRZobrazeniDatabaze" Grid.Row="2" Grid.Column="2">
+                <Border BorderBrush="#FFEAEAEA" BorderThickness="1"/>
+                <DataGrid Name="DGrDatabaze" SelectionChanged="DGrDatabaze_SelectionChanged"/>
+            </Grid>
+
+        </Grid>
+        <Grid Name="GRLogin" Visibility="Visible">
+            <!--<Label Content="Uživatelské jméno" Height="40" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="506,203,506,331" FontSize="20" Width="182" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>-->
+            <!--<TextBox Name="TxBxUzivatel" HorizontalAlignment="Center" VerticalAlignment="Center" Height="34" Margin="472,242,472,295" FontSize="16" TextWrapping="NoWrap" Text="user" Width="250" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>-->
+            <Label Content="Moje Finance" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="397,40,397,431"  FontSize="50" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="400" Height="100"/>
+            <Label Content="Přihlášení" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="347,140,347,373" FontSize="30" Width="500" Height="58" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+            <Label Content="Heslo" Height="40" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="531,319,531,262" FontSize="20" Width="182" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+            <PasswordBox Name="PwBxHeslo" HorizontalAlignment="Center" VerticalAlignment="Center" Height="34" Margin="497,364,497,223" FontSize="16"  Width="250" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="White" KeyDown="PwBxHeslo_KeyDown"/>
+            <Button Name="BTPrihlasit" Content="Přihlásit" HorizontalAlignment="Center" VerticalAlignment="Center" Width="150" Margin="572,452,572,181" Height="38" Click="BTPrihlasit_Click"/>
+            <Button Name="BTUkoncitAplikaci" Content="Ukončit" HorizontalAlignment="Center" VerticalAlignment="Center" Width="150" Margin="572,514,572,119" Height="38" Click="BTUkoncitAplikaci_Click"/>
+
+        </Grid>
+    </Grid>
+
+</Window>
