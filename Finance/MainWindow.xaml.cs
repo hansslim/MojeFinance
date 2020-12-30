@@ -24,7 +24,7 @@ namespace Finance
         private string zvolenaDB, zvolenaDBZobr;
         private string defaultDB, defaultZobrNazevDB, cestaDB;
 
-        private string myConfigDefaults = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><myConfiguration><programInfo><lastRun>" + DateTime.Now + "</lastRun></programInfo><defaultDB>Hotovost</defaultDB><defaultZobrNazevDB>Hotovost</defaultZobrNazevDB><pathDB>Finance.accdb</pathDB></myConfiguration>";
+        private string myConfigDefaults = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><myConfiguration><programInfo><lastStateChange>" + DateTime.Now + "</lastStateChange></programInfo><defaultDB>Hotovost</defaultDB><defaultZobrNazevDB>Hotovost</defaultZobrNazevDB><pathDB>Finance.accdb</pathDB></myConfiguration>";
 
         private string datumVstup;
         private double castkaVstup;
@@ -41,9 +41,10 @@ namespace Finance
             {
                 doc.Load("myConfig.xml");
 
-                defaultDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultDB").InnerText;
-                defaultZobrNazevDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultZobrNazevDB").InnerText;
-                cestaDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/pathDB").InnerText;
+                defaultDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultDB").InnerText != null ? doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultDB").InnerText : throw new NullReferenceException();
+                defaultZobrNazevDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultZobrNazevDB").InnerText != null ? doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultZobrNazevDB").InnerText : throw new NullReferenceException(); 
+                cestaDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/pathDB").InnerText ?? throw new NullReferenceException(); 
+                doc.DocumentElement.SelectSingleNode("/myConfiguration/programInfo/lastStateChange").InnerText = DateTime.Now.ToString();
 
                 doc.Save("myConfig.xml");
                 return true;
@@ -54,6 +55,24 @@ namespace Finance
                 if (result == MessageBoxResult.OK)
                 {
                     if (!File.Exists("myConfig.xml")) File.WriteAllText("myConfig.xml", myConfigDefaults);
+                    NacistDefaultniNastaveni();
+                    return false;
+                }
+                else
+                {
+                    Close();
+                    return false;
+                }
+            }
+            catch (NullReferenceException)
+            {
+                MessageBoxResult result = MessageBox.Show("Konfigurační soubor je pravděpodobě poškozený. Pokud chcete vygenerovat nový konfigurační soubor a pokračovat ve spuštění programu, klikněte na OK. V opačném případě bude program ukončen.", "Chyba", MessageBoxButton.OKCancel, MessageBoxImage.Error);
+                if (result == MessageBoxResult.OK)
+                {
+                    if (!File.Exists("myConfig.xml")) {
+                        //File.Delete("myConfig.xml");
+                        File.WriteAllText("myConfig.xml", myConfigDefaults); 
+                    }
                     NacistDefaultniNastaveni();
                     return false;
                 }
@@ -394,10 +413,13 @@ namespace Finance
         {
             try
             {
-                NacistDefaultniNastaveni();
-                connection = new OleDbConnection($@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={cestaDB}; Jet OLEDB:Database Password={pw};");
-                if (connection.State != ConnectionState.Open) connection.Open();
-                return true;
+               if (NacistDefaultniNastaveni())
+               {
+                    connection = new OleDbConnection($@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={cestaDB}; Jet OLEDB:Database Password={pw};");
+                    if (connection.State != ConnectionState.Open) connection.Open();
+                    return true;
+               }
+                return false;
             }
             catch (OleDbException e)
             {
@@ -411,7 +433,7 @@ namespace Finance
                 }
                 else
                 {
-                    MessageBox.Show($"Vyskytla se neočekávaná chyba spojena s připojením s databází, kvůli které se program ukončí (chybový kód: {e.ErrorCode} - {e.Message})", "Fatální chyba", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Vyskytla se neočekávaná chyba spojena s připojením k databázi, kvůli které se program ukončí (chybový kód: {e.ErrorCode} - {e.Message})", "Fatální chyba", MessageBoxButton.OK, MessageBoxImage.Error);
                     Close();
                 }
 
@@ -428,7 +450,7 @@ namespace Finance
             }
             finally
             {
-                if (connection.State != ConnectionState.Closed) connection.Close();
+                if (connection != null) if (connection.State != ConnectionState.Closed) connection.Close();
                 PwBxHeslo.Password = String.Empty;
             }
         }
