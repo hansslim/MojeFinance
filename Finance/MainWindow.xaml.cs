@@ -41,9 +41,9 @@ namespace Finance
             {
                 doc.Load("myConfig.xml");
 
-                defaultDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultDB").InnerText != null ? doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultDB").InnerText : throw new NullReferenceException();
-                defaultZobrNazevDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultZobrNazevDB").InnerText != null ? doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultZobrNazevDB").InnerText : throw new NullReferenceException(); 
-                cestaDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/pathDB").InnerText ?? throw new NullReferenceException(); 
+                defaultDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultDB").InnerText;
+                defaultZobrNazevDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultZobrNazevDB").InnerText;
+                cestaDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/pathDB").InnerText;
                 doc.DocumentElement.SelectSingleNode("/myConfiguration/programInfo/lastStateChange").InnerText = DateTime.Now.ToString();
 
                 doc.Save("myConfig.xml");
@@ -69,10 +69,7 @@ namespace Finance
                 MessageBoxResult result = MessageBox.Show("Konfigurační soubor je pravděpodobě poškozený. Pokud chcete vygenerovat nový konfigurační soubor a pokračovat ve spuštění programu, klikněte na OK. V opačném případě bude program ukončen.", "Chyba", MessageBoxButton.OKCancel, MessageBoxImage.Error);
                 if (result == MessageBoxResult.OK)
                 {
-                    if (!File.Exists("myConfig.xml")) {
-                        //File.Delete("myConfig.xml");
-                        File.WriteAllText("myConfig.xml", myConfigDefaults); 
-                    }
+                    File.WriteAllText("myConfig.xml", myConfigDefaults);
                     NacistDefaultniNastaveni();
                     return false;
                 }
