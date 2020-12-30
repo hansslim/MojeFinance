@@ -66,6 +66,7 @@ namespace Finance
             }
             catch (NullReferenceException)
             {
+                //VS doesn't catch it in Debug or Release
                 MessageBoxResult result = MessageBox.Show("Konfigurační soubor je pravděpodobě poškozený. Pokud chcete vygenerovat nový konfigurační soubor a pokračovat ve spuštění programu, klikněte na OK. V opačném případě bude program ukončen.", "Chyba", MessageBoxButton.OKCancel, MessageBoxImage.Error);
                 if (result == MessageBoxResult.OK)
                 {
@@ -414,6 +415,7 @@ namespace Finance
                {
                     connection = new OleDbConnection($@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={cestaDB}; Jet OLEDB:Database Password={pw};");
                     if (connection.State != ConnectionState.Open) connection.Open();
+                    //if (connection.State != ConnectionState.Closed) connection.Close();
                     return true;
                }
                 return false;
