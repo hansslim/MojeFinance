@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Finance"
         mc:Ignorable="d"
-        Title="Finance" Height="700" Width="1300" MinHeight="700" MinWidth="1300" WindowState="Maximized" Loaded="Window_Loaded">
+        Title="Finance" Height="700" Width="1300" MinHeight="700" MinWidth="1300" WindowState="Maximized">
     <Grid Name="GRWindow">
         <Grid Name="GRProgram" Visibility="Hidden">
             <Grid.RowDefinitions>
@@ -93,7 +93,6 @@
             <PasswordBox Name="PwBxHeslo" HorizontalAlignment="Center" VerticalAlignment="Center" Height="34" Margin="497,364,497,223" FontSize="16"  Width="250" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="White" KeyDown="PwBxHeslo_KeyDown"/>
             <Button Name="BTPrihlasit" Content="Přihlásit" HorizontalAlignment="Center" VerticalAlignment="Center" Width="150" Margin="572,452,572,181" Height="38" Click="BTPrihlasit_Click"/>
             <Button Name="BTUkoncitAplikaci" Content="Ukončit" HorizontalAlignment="Center" VerticalAlignment="Center" Width="150" Margin="572,514,572,119" Height="38" Click="BTUkoncitAplikaci_Click"/>
-
         </Grid>
     </Grid>
 

@@ -24,15 +24,16 @@ namespace Finance
         private string zvolenaDB, zvolenaDBZobr;
         private string defaultDB, defaultZobrNazevDB, cestaDB;
 
-        private string cestaMyConfig;
-        private string myConfigDefaults = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><myConfiguration><programInfo><lastRun>" + DateTime.Now +"</lastRun></programInfo><defaultDB>Hotovost</defaultDB><defaultZobrNazevDB>Hotovost</defaultZobrNazevDB><pathDB>Finance.accdb</pathDB></myConfiguration>";
+        private string myConfigDefaults = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><myConfiguration><programInfo><lastRun>" + DateTime.Now + "</lastRun></programInfo><defaultDB>Hotovost</defaultDB><defaultZobrNazevDB>Hotovost</defaultZobrNazevDB><pathDB>Finance.accdb</pathDB></myConfiguration>";
+
+        private string datumVstup;
+        private double castkaVstup;
+        private string poznamkaVstup;
 
         public MainWindow()
         {
             InitializeComponent();
         }
-
-        //todo: upravit cestu myConfig na proměnnou
         private bool NacistDefaultniNastaveni()
         {
             XmlDocument doc = new XmlDocument();
@@ -181,9 +182,7 @@ namespace Finance
 
         }
 
-        private string datumVstup;
-        private double castkaVstup;
-        private string poznamkaVstup;
+
         private bool ValidaceVstupu(object datum, string castka, string poznamka)
         {
             try
@@ -383,11 +382,6 @@ namespace Finance
             Close();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            //NacistDefaultniNastaveni();
-        }
-
         private void PwBxHeslo_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -415,7 +409,8 @@ namespace Finance
                 {
                     MessageBox.Show($"Nepodařilo se přihlásit k databázi. Zkontrolujte přihlašovací údaje a akci opakujte.", "Chyba", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-                else { 
+                else
+                {
                     MessageBox.Show($"Vyskytla se neočekávaná chyba spojena s připojením s databází, kvůli které se program ukončí (chybový kód: {e.ErrorCode} - {e.Message})", "Fatální chyba", MessageBoxButton.OK, MessageBoxImage.Error);
                     Close();
                 }
