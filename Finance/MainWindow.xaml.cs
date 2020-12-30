@@ -24,15 +24,21 @@ namespace Finance
         private string zvolenaDB, zvolenaDBZobr;
         private string defaultDB, defaultZobrNazevDB, cestaDB;
 
-        private string myConfigDefaults = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><myConfiguration><programInfo><lastStateChange>" + DateTime.Now + "</lastStateChange></programInfo><defaultDB>Hotovost</defaultDB><defaultZobrNazevDB>Hotovost</defaultZobrNazevDB><pathDB>Finance.accdb</pathDB></myConfiguration>";
+        private string myConfigDefaults = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><myConfiguration><programInfo><lastStateChange>" + DateTime.Now + "</lastStateChange></programInfo><defaultDB>Hotovost</defaultDB><defaultZobrNazevDB>Hotovost</defaultZobrNazevDB><pathDB>Finance.accdb</pathDB><dbBackups><pathBackups>/backups/</pathBackups><backupsAmount>5</backupsAmount></dbBackups></myConfiguration>";
 
+        private string cestaBackups;
+        private int pocetUchovavanychZaloh;
+        
         private string datumVstup;
         private double castkaVstup;
         private string poznamkaVstup;
 
+
+
         public MainWindow()
         {
             InitializeComponent();
+            
         }
         private bool NacistDefaultniNastaveni()
         {
@@ -44,7 +50,11 @@ namespace Finance
                 defaultDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultDB").InnerText;
                 defaultZobrNazevDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/defaultZobrNazevDB").InnerText;
                 cestaDB = doc.DocumentElement.SelectSingleNode("/myConfiguration/pathDB").InnerText;
+                cestaBackups = doc.DocumentElement.SelectSingleNode("/myConfiguration/dbBackups/pathBackups").InnerText;
+                pocetUchovavanychZaloh = Convert.ToInt32(doc.DocumentElement.SelectSingleNode("/myConfiguration/dbBackups/backupsAmount").InnerText);
+
                 doc.DocumentElement.SelectSingleNode("/myConfiguration/programInfo/lastStateChange").InnerText = DateTime.Now.ToString();
+
 
                 doc.Save("myConfig.xml");
                 return true;
@@ -66,7 +76,7 @@ namespace Finance
             }
             catch (NullReferenceException)
             {
-                //VS doesn't catch it in Debug or Release
+                //VS doesn't catch it in Debug or Release mode
                 MessageBoxResult result = MessageBox.Show("Konfigurační soubor je pravděpodobě poškozený. Pokud chcete vygenerovat nový konfigurační soubor a pokračovat ve spuštění programu, klikněte na OK. V opačném případě bude program ukončen.", "Chyba", MessageBoxButton.OKCancel, MessageBoxImage.Error);
                 if (result == MessageBoxResult.OK)
                 {
@@ -114,6 +124,8 @@ namespace Finance
         {
             if (NacistDefaultniNastaveni())
             {
+
+                ZalohovaniDB();
                 zvolenaDB = defaultDB;
 
                 DPDatum.SelectedDate = DateTime.Now;
@@ -121,6 +133,55 @@ namespace Finance
                 command = new OleDbCommand();
                 AktualizujStavCelkovehoStavuFinanci();
                 NaplnTabulkuDatyZeZvoleneDT(defaultDB, defaultZobrNazevDB);
+
+            }
+        }
+
+        private void ZalohovaniDB()
+        {
+            Random rnd = new Random();
+            //todo: nastavit jako vyskakovací okno
+            //todo: zavest checkbox na login window s automatickou zálohou
+            if (!Directory.Exists(cestaBackups))
+            {
+                Directory.CreateDirectory(cestaBackups);
+            }
+
+            string randomEnd = string.Empty;
+            for (int i = 0; i < 5; i++)
+            {
+                if (Convert.ToBoolean(rnd.Next(0, 2)))
+                {
+                    var x = (char)rnd.Next(65, 91);
+                    randomEnd += x;
+                }
+                else
+                {
+                    var x = (char)rnd.Next(48, 58);
+                    randomEnd += x;
+                }
+            }
+            File.Copy(cestaDB, cestaBackups + $@"\{DateTime.Now.ToString().Substring(0,10)}-{randomEnd}.accdb");
+            
+
+            string[] files = Directory.GetFiles(Directory.GetCurrentDirectory() + @"\backups", "*.accdb");
+
+            List<KeyValuePair<DateTime, string>> filePairs = new List<KeyValuePair<DateTime, string>>();
+            foreach (var item in files)
+            {
+                filePairs.Add(new KeyValuePair<DateTime, string>(File.GetCreationTime(item), item));
+            }
+
+            if (filePairs.Count > pocetUchovavanychZaloh)
+            {
+                var serazene = filePairs.OrderBy(x => x.Key).ToList();
+                int pocetSoucasnychZaloh = serazene.Count;
+                for (int i = 0; i < (pocetUchovavanychZaloh - pocetSoucasnychZaloh) *-1; i++)
+                {
+                    var value = serazene[0];
+                    File.Delete(value.Value);
+                    serazene.Remove(value);
+                }
             }
         }
 
@@ -426,13 +487,13 @@ namespace Finance
         {
             try
             {
-               if (NacistDefaultniNastaveni())
-               {
+                if (NacistDefaultniNastaveni())
+                {
                     connection = new OleDbConnection($@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={cestaDB}; Jet OLEDB:Database Password={pw};");
                     if (connection.State != ConnectionState.Open) connection.Open();
                     //if (connection.State != ConnectionState.Closed) connection.Close();
                     return true;
-               }
+                }
                 return false;
             }
             catch (OleDbException e)
