@@ -138,9 +138,6 @@ namespace Finance
 
         private void ZalohovaniDB()
         {
-            //todo: nastavit jako vyskakovací okno
-            //todo: zavest checkbox na login window s automatickou zálohou
-
             //kontrola existence složky
             if (!Directory.Exists(cestaBackups)) Directory.CreateDirectory(cestaBackups);
 
@@ -173,7 +170,7 @@ namespace Finance
             }
 
             //mazání přebytečných záloh
-            if (filePairs.Count > pocetUchovavanychZaloh)
+            if (filePairs.Count >= pocetUchovavanychZaloh)
             {
                 int pocetSoucasnychZaloh = serazene.Count;
                 int iterace = ((pocetUchovavanychZaloh - pocetSoucasnychZaloh) * -1) + 1;
@@ -296,7 +293,6 @@ namespace Finance
 
 
         }
-
 
         private bool ValidaceVstupu(object datum, string castka, string poznamka)
         {
