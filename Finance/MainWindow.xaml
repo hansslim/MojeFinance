@@ -67,6 +67,9 @@
             <Grid Name="GRVyberDatabaze" Grid.Row="0" Grid.ColumnSpan="2">
                 <Menu DockPanel.Dock="Top" BorderBrush="LightGray" BorderThickness="1">
                     <MenuItem Header="Program">
+                        <MenuItem Header="Zálohovat data" Name="MIProgram_Zalohovat" Click="MenuItem_Click"/>
+                        <MenuItem Header="Zálohovat data a odhlásit" Name="MIProgram_ZalohovatOdhlasit" Click="MenuItem_Click"/>
+                        <MenuItem Header="Zálohovat data a ukončit" Name="MIProgram_ZalohovatUkoncit" Click="MenuItem_Click"/>
                         <MenuItem Header="Odhlásit" Name="MIProgram_Odhlasit" Click="MenuItem_Click"/>
                         <MenuItem Header="Ukončit" Name="MIProgram_Ukoncit" Click="MenuItem_Click"/>
                     </MenuItem>

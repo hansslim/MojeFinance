@@ -29,7 +29,7 @@ namespace Finance
 
         private string cestaBackups;
         private int pocetUchovavanychZaloh;
-        
+
         private string datumVstup;
         private double castkaVstup;
         private string poznamkaVstup;
@@ -39,7 +39,7 @@ namespace Finance
         public MainWindow()
         {
             InitializeComponent();
-            
+
         }
         private bool NacistDefaultniNastaveni()
         {
@@ -140,7 +140,7 @@ namespace Finance
         {
             //todo: nastavit jako vyskakovací okno
             //todo: zavest checkbox na login window s automatickou zálohou
-            
+
             //kontrola existence složky
             if (!Directory.Exists(cestaBackups)) Directory.CreateDirectory(cestaBackups);
 
@@ -154,7 +154,7 @@ namespace Finance
             DateTime thisDB = File.GetLastWriteTime(cestaDB);
 
             //pokud se najde stejný soubor se stejným datem změny, metoda se ukončí
-            foreach (var item in serazene) if (item.Key == thisDB) { return; }
+            foreach (var item in serazene) if (item.Key == thisDB) { MessageBox.Show("Záloha nebyla vytvořena, protože se v záložní složce vyskytuje stejná záloha, což naznačuje, že v databázi nedošlo ke změně.", "Informace", MessageBoxButton.OK, MessageBoxImage.Information); return; }
 
             //generování náhodného konce názvu souboru 
             string randomEnd = string.Empty;
@@ -171,12 +171,12 @@ namespace Finance
                     randomEnd += x;
                 }
             }
-            
+
             //mazání přebytečných záloh
             if (filePairs.Count > pocetUchovavanychZaloh)
-            {    
+            {
                 int pocetSoucasnychZaloh = serazene.Count;
-                int iterace = ((pocetUchovavanychZaloh - pocetSoucasnychZaloh) * -1) +1;
+                int iterace = ((pocetUchovavanychZaloh - pocetSoucasnychZaloh) * -1) + 1;
                 for (int i = 0; i < iterace; i++)
                 {
                     var value = serazene[0];
@@ -186,7 +186,7 @@ namespace Finance
             }
 
             //vytváření zálohy
-            File.Copy(cestaDB, cestaBackups + $@"\{DateTime.Now.ToString().Substring(0,10)}-{randomEnd}.accdb");
+            File.Copy(cestaDB, cestaBackups + $@"\{DateTime.Now.ToString().Substring(0, 10)}-{randomEnd}.accdb");
         }
 
         private void AktualizujStavCelkovehoStavuFinanci()
@@ -228,10 +228,27 @@ namespace Finance
             {
                 switch (mi.Name.ToString())
                 {
+                    case "MIProgram_ZalohovatOdhlasit":
+                        {
+                            ZalohovaniDB();
+                            OdhlaseniUzivatele();
+                            break;
+                        }
+                    case "MIProgram_ZalohovatUkoncit":
+                        {
+                            ZalohovaniDB();
+                            OdhlaseniUzivatele();
+                            Close();
+                            break;
+                        }
+                    case "MIProgram_Zalohovat":
+                        {
+                            ZalohovaniDB();
+                            break;
+                        }
                     case "MIProgram_Odhlasit":
                         {
                             OdhlaseniUzivatele();
-                            ZalohovaniDB();
                             break;
                         }
                     case "MIProgram_Ukoncit":
