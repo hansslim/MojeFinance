@@ -8,7 +8,7 @@ using System.Windows;
 // sadu atributů. Změnou hodnot těchto atributů se upraví informace
 // přidružené k sestavení.
 [assembly: AssemblyTitle("Finance")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Simple Finance Management")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Jan Hubený")]
 [assembly: AssemblyProduct("Finance")]
@@ -51,5 +51,6 @@ using System.Windows;
 // Můžete zadat všechny hodnoty nebo nastavit výchozí číslo buildu a revize
 // pomocí zástupného znaku * takto:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.1.0.0")]
+[assembly: AssemblyFileVersion("1.1.0.0")]
+[assembly: NeutralResourcesLanguage("cs-CZ")]
