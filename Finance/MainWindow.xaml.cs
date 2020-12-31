@@ -17,6 +17,7 @@ namespace Finance
     /// </summary>
     public partial class MainWindow : Window
     {
+        Random rnd = new Random();
         OleDbConnection connection;
         OleDbCommand command;
         OleDbDataAdapter dataAdapter;
@@ -124,8 +125,6 @@ namespace Finance
         {
             if (NacistDefaultniNastaveni())
             {
-
-                ZalohovaniDB();
                 zvolenaDB = defaultDB;
 
                 DPDatum.SelectedDate = DateTime.Now;
@@ -139,14 +138,25 @@ namespace Finance
 
         private void ZalohovaniDB()
         {
-            Random rnd = new Random();
             //todo: nastavit jako vyskakovací okno
             //todo: zavest checkbox na login window s automatickou zálohou
-            if (!Directory.Exists(cestaBackups))
-            {
-                Directory.CreateDirectory(cestaBackups);
-            }
+            
+            //kontrola existence složky
+            if (!Directory.Exists(cestaBackups)) Directory.CreateDirectory(cestaBackups);
 
+            //načtení záloh ze složky (datum)
+            string[] files = Directory.GetFiles(Directory.GetCurrentDirectory() + @"\backups", "*.accdb");
+            List<KeyValuePair<DateTime, string>> filePairs = new List<KeyValuePair<DateTime, string>>();
+            foreach (var item in files) filePairs.Add(new KeyValuePair<DateTime, string>(File.GetLastWriteTime(item), item));
+
+            //řazení souborů podle data změny
+            var serazene = filePairs.OrderBy(x => x.Key).ToList();
+            DateTime thisDB = File.GetLastWriteTime(cestaDB);
+
+            //pokud se najde stejný soubor se stejným datem změny, metoda se ukončí
+            foreach (var item in serazene) if (item.Key == thisDB) { return; }
+
+            //generování náhodného konce názvu souboru 
             string randomEnd = string.Empty;
             for (int i = 0; i < 5; i++)
             {
@@ -161,28 +171,22 @@ namespace Finance
                     randomEnd += x;
                 }
             }
-            File.Copy(cestaDB, cestaBackups + $@"\{DateTime.Now.ToString().Substring(0,10)}-{randomEnd}.accdb");
             
-
-            string[] files = Directory.GetFiles(Directory.GetCurrentDirectory() + @"\backups", "*.accdb");
-
-            List<KeyValuePair<DateTime, string>> filePairs = new List<KeyValuePair<DateTime, string>>();
-            foreach (var item in files)
-            {
-                filePairs.Add(new KeyValuePair<DateTime, string>(File.GetCreationTime(item), item));
-            }
-
+            //mazání přebytečných záloh
             if (filePairs.Count > pocetUchovavanychZaloh)
-            {
-                var serazene = filePairs.OrderBy(x => x.Key).ToList();
+            {    
                 int pocetSoucasnychZaloh = serazene.Count;
-                for (int i = 0; i < (pocetUchovavanychZaloh - pocetSoucasnychZaloh) *-1; i++)
+                int iterace = ((pocetUchovavanychZaloh - pocetSoucasnychZaloh) * -1) +1;
+                for (int i = 0; i < iterace; i++)
                 {
                     var value = serazene[0];
                     File.Delete(value.Value);
                     serazene.Remove(value);
                 }
             }
+
+            //vytváření zálohy
+            File.Copy(cestaDB, cestaBackups + $@"\{DateTime.Now.ToString().Substring(0,10)}-{randomEnd}.accdb");
         }
 
         private void AktualizujStavCelkovehoStavuFinanci()
@@ -227,6 +231,7 @@ namespace Finance
                     case "MIProgram_Odhlasit":
                         {
                             OdhlaseniUzivatele();
+                            ZalohovaniDB();
                             break;
                         }
                     case "MIProgram_Ukoncit":
