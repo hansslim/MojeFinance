@@ -25,7 +25,7 @@ namespace Finance
         private string zvolenaDB, zvolenaDBZobr;
         private string defaultDB, defaultZobrNazevDB, cestaDB;
 
-        private string myConfigDefaults = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><myConfiguration><programInfo><lastStateChange>" + DateTime.Now + "</lastStateChange></programInfo><defaultDB>Hotovost</defaultDB><defaultZobrNazevDB>Hotovost</defaultZobrNazevDB><pathDB>Finance.accdb</pathDB><dbBackups><pathBackups>/backups/</pathBackups><backupsAmount>5</backupsAmount></dbBackups></myConfiguration>";
+        private string myConfigDefaults = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><myConfiguration><programInfo><lastStateChange>" + DateTime.Now + "</lastStateChange></programInfo><defaultDB>Hotovost</defaultDB><defaultZobrNazevDB>Hotovost</defaultZobrNazevDB><pathDB>Finance.accdb</pathDB><dbBackups><pathBackups>\\backups\\</pathBackups><backupsAmount>5</backupsAmount></dbBackups></myConfiguration>";
 
         private string cestaBackups;
         private int pocetUchovavanychZaloh;
@@ -139,7 +139,7 @@ namespace Finance
         private void ZalohovaniDB()
         {
             //kontrola existence složky
-            if (!Directory.Exists(cestaBackups)) Directory.CreateDirectory(cestaBackups);
+            if (!Directory.Exists(Directory.GetCurrentDirectory() + cestaBackups)) Directory.CreateDirectory(Directory.GetCurrentDirectory() + cestaBackups);
 
             //načtení záloh ze složky (datum)
             string[] files = Directory.GetFiles(Directory.GetCurrentDirectory() + @"\backups", "*.accdb");
@@ -183,7 +183,7 @@ namespace Finance
             }
 
             //vytváření zálohy
-            File.Copy(cestaDB, cestaBackups + $@"\{DateTime.Now.ToString().Substring(0, 10)}-{randomEnd}.accdb");
+            File.Copy(cestaDB, Directory.GetCurrentDirectory() + cestaBackups + $@"\{DateTime.Now.ToString().Substring(0, 10)}-{randomEnd}.accdb");
         }
 
         private void AktualizujStavCelkovehoStavuFinanci()
