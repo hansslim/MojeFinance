@@ -8,7 +8,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Xml;
-using System.Text;
+using ADOX;
+using ADODB;
+
 
 namespace Finance
 {
@@ -34,12 +36,10 @@ namespace Finance
         private double castkaVstup;
         private string poznamkaVstup;
 
-
-
         public MainWindow()
         {
             InitializeComponent();
-
+            //VytvorVychoziDB(cestaDB+@"\db.accdb", "a");
         }
         private bool NacistDefaultniNastaveni()
         {
@@ -130,6 +130,7 @@ namespace Finance
                 DPDatum.SelectedDate = DateTime.Now;
 
                 command = new OleDbCommand();
+                if (connection.State != ConnectionState.Open) connection.Open();
                 AktualizujStavCelkovehoStavuFinanci();
                 NaplnTabulkuDatyZeZvoleneDT(defaultDB, defaultZobrNazevDB);
 
@@ -190,8 +191,8 @@ namespace Finance
         {
             List<double> list = new List<double>();
             list.AddRange(VratCastkyZeZvoleneDB("Hotovost"));
-            list.AddRange(VratCastkyZeZvoleneDB("BankaBeznyUcet"));
-            list.AddRange(VratCastkyZeZvoleneDB("BankaSporiciUcet"));
+            //list.AddRange(VratCastkyZeZvoleneDB("BankaBeznyUcet"));
+            //list.AddRange(VratCastkyZeZvoleneDB("BankaSporiciUcet"));
             double soucet = list.Sum();
             LBCelkovyZustatek.Content = String.Format("{0} Kč", soucet);
             AktualizujAktZustatekZvoleneDB(zvolenaDB);
@@ -215,7 +216,6 @@ namespace Finance
             {
                 list.Add(Convert.ToDouble(reader[0].ToString()));
             }
-            if (connection.State != ConnectionState.Closed) connection.Close();
             return list;
         }
 
@@ -289,9 +289,6 @@ namespace Finance
             dataAdapter.Fill(dt);
             DGrDatabaze.ItemsSource = dt.AsDataView();
             AktualizujAktZustatekZvoleneDB(nazevDT);
-            if (connection.State != ConnectionState.Closed) connection.Close();
-
-
         }
 
         private bool ValidaceVstupu(object datum, string castka, string poznamka)
@@ -349,7 +346,6 @@ namespace Finance
                 NaplnTabulkuDatyZeZvoleneDT(zvolenaDB, zvolenaDBZobr);
                 VymazDataZFormu();
                 AktualizujStavCelkovehoStavuFinanci();
-                if (connection.State != ConnectionState.Closed) connection.Close();
             }
             else MessageBox.Show("Zadané vstupní hodnoty neprošly validací. Zkuste hodnoty zadat znovu.", "Chyba", MessageBoxButton.OK, MessageBoxImage.Error);
             BTUpravitZaznam.Visibility = Visibility.Hidden;
@@ -390,8 +386,6 @@ namespace Finance
                     BTUpravitZaznam.Visibility = Visibility.Hidden;
 
                     AktualizujStavCelkovehoStavuFinanci();
-
-                    if (connection.State != ConnectionState.Closed) connection.Close();
                 }
                 else MessageBox.Show("Zadané vstupní hodnoty neprošly validací. Zkuste hodnoty zadat znovu.", "Chyba", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -412,8 +406,6 @@ namespace Finance
                 BTPridatZaznam.Visibility = Visibility.Visible;
                 BTUpravitZaznam.Visibility = Visibility.Hidden;
                 AktualizujStavCelkovehoStavuFinanci();
-
-                if (connection.State != ConnectionState.Closed) connection.Close();
             }
             else MessageBox.Show("Není vybrán žádný záznam ke smazání.", "Varování", MessageBoxButton.OK, MessageBoxImage.Warning);
 
@@ -495,7 +487,7 @@ namespace Finance
 
         private void PwBxHeslo_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            if (e.Key == System.Windows.Input.Key.Enter)
             {
                 ProcesPrihlaseni();
             }
@@ -563,6 +555,46 @@ namespace Finance
 
             GRLogin.Visibility = Visibility.Visible;
             GRProgram.Visibility = Visibility.Hidden;
+        }
+
+        private bool VytvorVychoziDB(string fileName, string password)
+        {
+            Catalog cat = new Catalog();
+            Table table = new Table();
+            ADODB.Connection con = new Connection();
+
+            try
+            {
+                cat.Create("provider=Microsoft.ACE.OleDb.12.0;Data Source=" + fileName + $";Jet OLEDB:Database Password={password};");
+
+                string connString = "Provider=Microsoft.ACE.OLEDB.12.0;" + "Data Source=" + fileName + $";Jet OLEDB:Database Password={password};";
+
+                con.Open(connString);
+                cat.ActiveConnection = con;
+
+                table.Name = "Hotovost";
+                table.Columns.Append("ID", ADOX.DataTypeEnum.adInteger);
+                table.Keys.Append("PrimaryKey", KeyTypeEnum.adKeyPrimary, "ID");
+                table.Columns["ID"].ParentCatalog = cat;
+                table.Columns["ID"].Properties["AutoIncrement"].Value = true;
+
+                table.Columns.Append("Datum", ADOX.DataTypeEnum.adDate);
+                table.Columns.Append("Castka", ADOX.DataTypeEnum.adDouble);
+                table.Columns.Append("Poznamka", ADOX.DataTypeEnum.adVarWChar);
+
+                cat.Tables.Append(table);
+            }
+            catch (Exception e)
+            {
+                if (con != null) con.Close();
+                string innerEx = e.InnerException == null ? "-" : e.InnerException.ToString();
+                MessageBox.Show($"Vyskytla se neočekávaná chyba, kvůli které se program ukončí." +
+                    $"\n\rInner Exception: {innerEx} " +
+                    $"\n\rException Message: {e.Message}", "Fatální chyba", MessageBoxButton.OK, MessageBoxImage.Error);
+                Close();
+                return false;
+            }
+            return true;
         }
     }
 }
