@@ -121,21 +121,7 @@ namespace Finance
             }
         }
 
-        private void PoLoginu()
-        {
-            if (NacistDefaultniNastaveni())
-            {
-                zvolenaDB = defaultDB;
-
-                DPDatum.SelectedDate = DateTime.Now;
-
-                command = new OleDbCommand();
-                if (connection.State != ConnectionState.Open) connection.Open();
-                AktualizujStavCelkovehoStavuFinanci();
-                NaplnTabulkuDatyZeZvoleneDT(defaultDB, defaultZobrNazevDB);
-
-            }
-        }
+        
 
         private void ZalohovaniDB()
         {
@@ -203,7 +189,7 @@ namespace Finance
             LBAktZustatekDT.Content = VratCastkyZeZvoleneDB(db).Sum().ToString() + " Kč";
         }
 
-        //todo: přepsat na async
+        // todo: přidat trycatch
         private List<double> VratCastkyZeZvoleneDB(string dbName)
         {
             List<double> list = new List<double>();
@@ -468,16 +454,30 @@ namespace Finance
 
         private void ProcesPrihlaseni()
         {
-            if (PrihlaseniKDB(PwBxHeslo.Password))
+            
+            if (InicializaceConfigSouboru())
             {
                 if (NacistDefaultniNastaveni())
                 {
-                    PoLoginu();
+                    zvolenaDB = defaultDB;
 
-                    GRLogin.Visibility = Visibility.Hidden;
-                    GRProgram.Visibility = Visibility.Visible;
+                    DPDatum.SelectedDate = DateTime.Now;
+
+                    if (PrihlaseniKDB(PwBxHeslo.Password))
+                    {
+                        command = new OleDbCommand();
+                        if (connection.State != ConnectionState.Open) connection.Open();
+                        AktualizujStavCelkovehoStavuFinanci();
+                        NaplnTabulkuDatyZeZvoleneDT(defaultDB, defaultZobrNazevDB);
+
+                        GRLogin.Visibility = Visibility.Hidden;
+                        GRProgram.Visibility = Visibility.Visible;
+                            
+                    }
                 }
             }
+            
+
         }
 
         private void BTUkoncitAplikaci_Click(object sender, RoutedEventArgs e)
@@ -493,15 +493,14 @@ namespace Finance
             }
         }
 
-        private bool PrihlaseniKDB(string pw)
+        private bool PrihlaseniKDB(string password)
         {
             try
             {
                 if (NacistDefaultniNastaveni())
                 {
-                    connection = new OleDbConnection($@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={cestaDB}; Jet OLEDB:Database Password={pw};");
+                    connection = new OleDbConnection($@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={cestaDB}; Jet OLEDB:Database Password={password};");
                     if (connection.State != ConnectionState.Open) connection.Open();
-                    //if (connection.State != ConnectionState.Closed) connection.Close();
                     return true;
                 }
                 return false;
@@ -510,7 +509,16 @@ namespace Finance
             {
                 if (e.ErrorCode == -2147467259)
                 {
-                    MessageBox.Show("Nepodařilo se nalézt databázi. Zkontrolujte, zda se databáze nachází ve složce programu, a akci opakujte.", "Chyba", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBoxResult result = MessageBox.Show("Nepodařilo se nalézt databázi. Chcete vytvořit novou databázi (s heslem: 123456)? V opačném případě zkontrolujte, zda databáze opravdu existuje a že je uložena ve složce programu.", "Chyba", MessageBoxButton.YesNo, MessageBoxImage.Error);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        VytvorVychoziDB(cestaDB, "123456");
+                        return false;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 else if (e.ErrorCode == -2147217843)
                 {
@@ -594,7 +602,35 @@ namespace Finance
                 Close();
                 return false;
             }
+            finally
+            {
+                if (con != null) con.Close();
+            }
             return true;
+        }
+
+        private bool InicializaceConfigSouboru()
+        {
+            XmlDocument doc = new XmlDocument();
+            try
+            {
+                doc.Load("myConfig.xml");
+                return true;
+            }
+            catch (FileNotFoundException)
+            {
+                MessageBoxResult result = MessageBox.Show("Nepodařilo se nalézt konfigurační soubor. Pokud chcete vygenerovat nový konfigurační soubor a pokračovat ve spuštění programu, klikněte na OK. V opačném případě bude program ukončen.", "Chyba", MessageBoxButton.OKCancel, MessageBoxImage.Error);
+                if (result == MessageBoxResult.OK)
+                {
+                    if (!File.Exists("myConfig.xml")) File.WriteAllText("myConfig.xml", myConfigDefaults);
+                    return false;
+                }
+                else
+                {
+                    Close();
+                    return false;
+                }
+            }
         }
     }
 }
